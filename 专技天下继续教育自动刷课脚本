@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         专技天下继续教育自动刷课脚本
+// @name         专技天下继续教育自动刷课脚本最终版
 // @namespace    http://tampermonkey.net/
-// @version      2.3
-// @description  修复静音问题、刷新后播放问题和状态面板显示问题
+// @version      2.4
+// @description  修复静音问题、刷新后播放问题和状态面板显示问题，增加视频播放监控
 // @author       X.Liam
 // @match        https://*.zgzjzj.com/*
 // @grant        GM_setValue
@@ -52,6 +52,40 @@
 
         // 启动防休眠
         startAntiSleep();
+
+        // 新增：启动视频播放监控
+        startVideoPlaybackMonitor();
+    }
+
+    // 新增：启动视频播放监控
+    function startVideoPlaybackMonitor() {
+        // 每分钟检查视频播放状态
+        setInterval(() => {
+            monitorVideoPlayback();
+        }, 60000); // 60秒检查一次
+
+        // 立即执行一次检查
+        setTimeout(monitorVideoPlayback, 5000);
+    }
+
+    // 新增：监控视频播放状态
+    function monitorVideoPlayback() {
+        if (!video) {
+            console.log('视频监控: 未找到视频元素');
+            return;
+        }
+
+        console.log('视频监控: 检查视频状态');
+        statusPanel.updateStatus('视频状态检查中...');
+
+        // 检查视频是否暂停
+        if (video.paused) {
+            console.log('视频监控: 视频暂停，尝试恢复播放');
+            playVideo();
+        } else {
+            console.log('视频监控: 视频播放正常');
+            statusPanel.updateStatus('视频播放中');
+        }
     }
 
     // 确保状态面板可见
@@ -266,7 +300,7 @@
         // 面板HTML结构
         panel.innerHTML = `
             <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 10px; margin-bottom: 10px;">
-                <div style="font-weight: bold; font-size: 18px;">专技天下刷课助手 v2.3</div>
+                <div style="font-weight: bold; font-size: 18px;">专技天下刷课助手 v2.4</div>
                 <div id="auto-study-status-current-time">${new Date().toTimeString().substr(0, 8)}</div>
             </div>
             <div style="display: grid; grid-template-columns: 100px 1fr; gap: 8px;">
